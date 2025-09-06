@@ -16,10 +16,11 @@ export default function Layout({
   // 检测屏幕尺寸
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1024)
+      const mobile = window.innerWidth < 1024
+      setIsMobile(mobile)
       // 桌面端默认显示侧边栏，移动端默认隐藏
-      if (window.innerWidth >= 1024) {
-        setSidebarOpen(false) // 桌面端不需要覆盖模式
+      if (mobile) {
+        setSidebarOpen(false) // 移动端默认隐藏
       }
     }
 
@@ -47,7 +48,7 @@ export default function Layout({
         {' '}
         {/* 减去导航栏高度 */}
         {/* 侧边栏 */}
-        {showSidebar && <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />}
+        {showSidebar && <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} isMobile={isMobile} />}
         {/* 主内容区域 */}
         <main
           className={`

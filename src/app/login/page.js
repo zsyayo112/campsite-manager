@@ -189,7 +189,7 @@ export default function LoginPage() {
             <div>
               <p className="text-sm text-blue-800 font-medium">开发提示</p>
               <p className="text-xs text-blue-700 mt-1">
-                这是登录页面框架。用户认证功能将在后续开发阶段实现。目前可以使用"演示登录"直接进入系统。
+                这是登录页面框架。用户认证功能将在后续开发阶段实现。目前可以使用&quot;演示登录&quot;直接进入系统。
               </p>
             </div>
           </div>
