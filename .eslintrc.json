@@ -1,5 +1,8 @@
 {
-  "extends": ["next/core-web-vitals", "prettier"],
+  "extends": [
+    "next/core-web-vitals",
+    "prettier"
+  ],
   "plugins": ["prettier"],
   "rules": {
     "prettier/prettier": "error",
@@ -31,7 +34,9 @@
     "react/no-unknown-property": "error",
     "react/require-render-return": "error",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "react/no-unescaped-entities": "off"
   },
   "env": {
     "browser": true,
