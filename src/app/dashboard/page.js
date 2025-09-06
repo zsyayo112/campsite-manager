@@ -1,4 +1,5 @@
-import Layout from '../../components/layout/Layout'
+// import Layout from '../../components/layout/Layout'
+import Layout from '../../../components/layout/Layout'
 
 // 模拟用户数据
 const mockUser = {
