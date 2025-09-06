@@ -1,0 +1,96 @@
+<!-- ===== 响应式断点 ===== -->
+<!-- 
+sm: 640px+   (手机横屏及以上)
+md: 768px+   (平板及以上)  
+lg: 1024px+  (笔记本及以上)
+xl: 1280px+  (台式机及以上)
+2xl: 1536px+ (大屏幕)
+-->
+
+<!-- ===== 响应式网格示例 ===== -->
+<div class="grid 
+            grid-cols-1      /* 手机：1列 */
+            sm:grid-cols-2   /* 手机横屏：2列 */ 
+            md:grid-cols-3   /* 平板：3列 */
+            lg:grid-cols-4   /* 笔记本：4列 */
+            xl:grid-cols-6   /* 台式机：6列 */
+            gap-4">
+  
+  <div class="bg-blue-500 p-4">项目 1</div>
+  <div class="bg-blue-500 p-4">项目 2</div>
+  <div class="bg-blue-500 p-4">项目 3</div>
+  <div class="bg-blue-500 p-4">项目 4</div>
+  <div class="bg-blue-500 p-4">项目 5</div>
+  <div class="bg-blue-500 p-4">项目 6</div>
+</div>
+
+<!-- ===== 响应式文字大小 ===== -->
+<h1 class="text-2xl      /* 手机：24px */
+           sm:text-3xl   /* 手机横屏：30px */
+           md:text-4xl   /* 平板：36px */
+           lg:text-5xl   /* 笔记本：48px */
+           xl:text-6xl"> /* 台式机：60px */
+  响应式标题
+</h1>
+
+<!-- ===== 响应式隐藏/显示 ===== -->
+<div class="block md:hidden">只在手机上显示</div>
+<div class="hidden md:block">只在平板及以上显示</div>
+<div class="hidden lg:block">只在笔记本及以上显示</div>
+
+<!-- ===== 响应式内边距 ===== -->
+<div class="p-2         /* 手机：8px */
+           sm:p-4       /* 手机横屏：16px */
+           md:p-6       /* 平板：24px */
+           lg:p-8">     /* 笔记本：32px */
+  响应式内边距
+</div>
+
+<!-- ===== 完整的响应式卡片示例 ===== -->
+<div class="max-w-sm         /* 手机：最大宽度384px */
+           sm:max-w-md       /* 手机横屏：最大宽度448px */
+           md:max-w-lg       /* 平板：最大宽度512px */
+           lg:max-w-xl       /* 笔记本：最大宽度576px */
+           mx-auto           /* 水平居中 */
+           bg-white 
+           rounded-lg 
+           shadow-md 
+           p-4 
+           sm:p-6 
+           md:p-8">
+  
+  <img class="w-full 
+             h-48 
+             sm:h-64 
+             object-cover 
+             rounded-lg" 
+       src="image.jpg" 
+       alt="图片">
+  
+  <h2 class="text-lg 
+            sm:text-xl 
+            md:text-2xl 
+            font-bold 
+            mt-4">
+    卡片标题
+  </h2>
+  
+  <p class="text-sm 
+           sm:text-base 
+           text-gray-600 
+           mt-2">
+    这是卡片的描述内容，会根据屏幕大小调整字体大小。
+  </p>
+  
+  <button class="w-full 
+                sm:w-auto 
+                bg-blue-500 
+                hover:bg-blue-600 
+                text-white 
+                px-4 
+                py-2 
+                rounded 
+                mt-4">
+    响应式按钮
+  </button>
+</div>

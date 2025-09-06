@@ -1,0 +1,125 @@
+<!-- ===== 颜色类名 ===== -->
+
+<!-- 背景颜色 -->
+<div class="bg-red-500">红色背景</div>
+<div class="bg-blue-500">蓝色背景</div>
+<div class="bg-green-500">绿色背景</div>
+
+<!-- 文字颜色 -->
+<p class="text-red-500">红色文字</p>
+<p class="text-blue-500">蓝色文字</p>
+<p class="text-gray-800">深灰色文字</p>
+
+<!-- 颜色深浅：50(最浅) 到 950(最深) -->
+<div class="bg-blue-50">很浅的蓝色</div>
+<div class="bg-blue-200">浅蓝色</div>
+<div class="bg-blue-500">标准蓝色</div>
+<div class="bg-blue-800">深蓝色</div>
+<div class="bg-blue-950">很深的蓝色</div>
+
+<!-- ===== 间距类名 ===== -->
+
+<!-- 内边距 (padding) -->
+<div class="p-4">所有方向内边距 16px</div>
+<div class="px-4">左右内边距 16px</div>
+<div class="py-4">上下内边距 16px</div>
+<div class="pt-4">顶部内边距 16px</div>
+<div class="pr-4">右边内边距 16px</div>
+<div class="pb-4">底部内边距 16px</div>
+<div class="pl-4">左边内边距 16px</div>
+
+<!-- 外边距 (margin) -->
+<div class="m-4">所有方向外边距 16px</div>
+<div class="mx-4">左右外边距 16px</div>
+<div class="my-4">上下外边距 16px</div>
+<div class="mt-4">顶部外边距 16px</div>
+
+<!-- 间距数值对应 -->
+<!-- 
+p-1 = 4px
+p-2 = 8px  
+p-3 = 12px
+p-4 = 16px
+p-5 = 20px
+p-6 = 24px
+p-8 = 32px
+p-10 = 40px
+p-12 = 48px
+-->
+
+<!-- ===== 尺寸类名 ===== -->
+
+<!-- 宽度 -->
+<div class="w-full">100% 宽度</div>
+<div class="w-1/2">50% 宽度</div>
+<div class="w-1/3">33.33% 宽度</div>
+<div class="w-64">256px 宽度</div>
+<div class="w-screen">屏幕宽度</div>
+
+<!-- 高度 -->
+<div class="h-64">256px 高度</div>
+<div class="h-screen">屏幕高度</div>
+<div class="min-h-screen">最小高度为屏幕高度</div>
+
+<!-- ===== 显示和布局 ===== -->
+
+<!-- 显示类型 -->
+<div class="block">块级元素</div>
+<div class="inline">内联元素</div>
+<div class="inline-block">内联块元素</div>
+<div class="hidden">隐藏元素</div>
+
+<!-- Flexbox 布局 -->
+<div class="flex">Flex 容器</div>
+<div class="flex justify-center">水平居中</div>
+<div class="flex items-center">垂直居中</div>
+<div class="flex justify-between">两端对齐</div>
+<div class="flex space-x-4">子元素间距 16px</div>
+
+<!-- Grid 布局 -->
+<div class="grid grid-cols-3">3列网格</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">响应式网格</div>
+
+<!-- ===== 文字样式 ===== -->
+
+<!-- 字体大小 -->
+<p class="text-xs">很小文字 (12px)</p>
+<p class="text-sm">小文字 (14px)</p>
+<p class="text-base">正常文字 (16px)</p>
+<p class="text-lg">大文字 (18px)</p>
+<p class="text-xl">很大文字 (20px)</p>
+<p class="text-2xl">超大文字 (24px)</p>
+<p class="text-4xl">巨大文字 (36px)</p>
+
+<!-- 字体粗细 -->
+<p class="font-thin">很细</p>
+<p class="font-normal">正常</p>
+<p class="font-medium">中等</p>
+<p class="font-semibold">半粗</p>
+<p class="font-bold">粗体</p>
+<p class="font-extrabold">超粗</p>
+
+<!-- 文字对齐 -->
+<p class="text-left">左对齐</p>
+<p class="text-center">居中对齐</p>
+<p class="text-right">右对齐</p>
+
+<!-- ===== 边框和圆角 ===== -->
+
+<!-- 边框 -->
+<div class="border">1px 边框</div>
+<div class="border-2">2px 边框</div>
+<div class="border-red-500">红色边框</div>
+<div class="border-t">只有顶部边框</div>
+
+<!-- 圆角 -->
+<div class="rounded">小圆角</div>
+<div class="rounded-md">中等圆角</div>
+<div class="rounded-lg">大圆角</div>
+<div class="rounded-full">完全圆形</div>
+
+<!-- ===== 阴影 ===== -->
+<div class="shadow">小阴影</div>
+<div class="shadow-md">中等阴影</div>
+<div class="shadow-lg">大阴影</div>
+<div class="shadow-xl">超大阴影</div>
