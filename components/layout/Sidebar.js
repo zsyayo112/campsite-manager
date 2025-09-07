@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -179,9 +178,9 @@ const bottomNavigationItems = [
   },
 ]
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, isMobile = false }) {
   const pathname = usePathname()
-  const [expandedItems, setExpandedItems] = useState({})
+  // const [expandedItems, setExpandedItems] = useState({})
 
   // 检查是否为当前页面
   const isActiveLink = href => {
