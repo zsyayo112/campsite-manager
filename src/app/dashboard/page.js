@@ -1,376 +1,484 @@
-// import Layout from '../../components/layout/Layout'
-import Layout from '../../../components/layout/Layout'
+'use client'
 
-// 模拟用户数据
-const mockUser = {
-  name: '张管理员',
-  email: 'admin@campsite.com',
-  role: '系统管理员',
-}
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Button, LoadingSpinner } from '../../../components/ui/FormComponents'
+import { useAuth } from '../../contexts/AuthContext'
 
-// 模拟统计数据
-const stats = [
-  {
-    name: '总预订数',
-    value: '2,651',
-    change: '+4.75%',
-    changeType: 'positive',
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: '活跃客户',
-    value: '1,423',
-    change: '+2.02%',
-    changeType: 'positive',
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: '月收入',
-    value: '¥89,400',
-    change: '+12.5%',
-    changeType: 'positive',
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: '入住率',
-    value: '78.2%',
-    change: '-3.1%',
-    changeType: 'negative',
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-        />
-      </svg>
-    ),
-  },
-]
+export default function DashboardPage() {
+  const router = useRouter()
+  const { user, isAuthenticated, isLoading, logout } = useAuth()
+  const [currentTime, setCurrentTime] = useState(new Date())
 
-// 最近预订数据
-const recentBookings = [
-  {
-    id: 'BK001',
-    guestName: '李小明',
-    package: '豪华帐篷套餐',
-    checkIn: '2024-03-15',
-    checkOut: '2024-03-17',
-    status: 'confirmed',
-    amount: '¥1,280',
-  },
-  {
-    id: 'BK002',
-    guestName: '王美丽',
-    package: '标准露营套餐',
-    checkIn: '2024-03-16',
-    checkOut: '2024-03-18',
-    status: 'pending',
-    amount: '¥680',
-  },
-  {
-    id: 'BK003',
-    guestName: '张三丰',
-    package: 'VIP度假套餐',
-    checkIn: '2024-03-18',
-    checkOut: '2024-03-20',
-    status: 'confirmed',
-    amount: '¥2,100',
-  },
-]
+  // 更新时间
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
-function StatCard({ stat }) {
+  // 认证检查
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated, isLoading, router])
+
+  // 登出处理
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('登出失败:', error)
+      router.push('/login')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner size="xl" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !user) {
+    return null
+  }
+
+  // 根据用户角色渲染不同的仪表盘
+  const renderDashboard = () => {
+    switch (user.role) {
+      case 'admin':
+        return <AdminDashboard user={user} currentTime={currentTime} />
+      case 'staff':
+        return <StaffDashboard user={user} currentTime={currentTime} />
+      case 'guest':
+        return <GuestDashboard user={user} currentTime={currentTime} />
+      default:
+        return <GuestDashboard user={user} currentTime={currentTime} />
+    }
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center">
-        <div className="flex-shrink-0">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <div className="text-green-600">{stat.icon}</div>
+    <div className="min-h-screen bg-gray-50">
+      {/* 顶部导航栏 */}
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-3">
+                <span className="text-white font-bold text-lg">🏕️</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">营地管理系统</h1>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                {currentTime.toLocaleString('zh-CN')}
+              </div>
+              <div className="text-sm text-gray-600">
+                欢迎，{user?.firstName || user?.username || '用户'}
+                <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                  {user?.role === 'admin' ? '管理员' : user?.role === 'staff' ? '员工' : '客户'}
+                </span>
+              </div>
+              <Button onClick={handleLogout} variant="secondary" size="sm">
+                登出
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="ml-4 w-0 flex-1">
-          <dl>
-            <dt className="text-sm font-medium text-gray-500 truncate">
-              {stat.name}
-            </dt>
-            <dd className="flex items-baseline">
-              <div className="text-2xl font-semibold text-gray-900">
-                {stat.value}
-              </div>
-              <div
-                className={`ml-2 flex items-baseline text-sm font-semibold ${
-                  stat.changeType === 'positive'
-                    ? 'text-green-600'
-                    : 'text-red-600'
-                }`}
-              >
-                {stat.changeType === 'positive' ? (
-                  <svg
-                    className="self-center flex-shrink-0 h-4 w-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="self-center flex-shrink-0 h-4 w-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-                <span className="ml-1">{stat.change}</span>
-              </div>
-            </dd>
-          </dl>
-        </div>
-      </div>
+      </nav>
+
+      {/* 渲染对应角色的仪表盘 */}
+      {renderDashboard()}
     </div>
   )
 }
 
-function getStatusBadge(status) {
-  const styles = {
-    confirmed: 'bg-green-100 text-green-800',
-    pending: 'bg-yellow-100 text-yellow-800',
-    cancelled: 'bg-red-100 text-red-800',
+// 管理员仪表盘
+function AdminDashboard({ user, currentTime }) {
+  const router = useRouter()
+
+  const stats = {
+    totalSites: 45,
+    occupiedSites: 32,
+    availableSites: 13,
+    todayCheckins: 8,
+    todayCheckouts: 5,
+    totalRevenue: 25680,
+    monthlyRevenue: 156780,
+    totalStaff: 12,
+    totalGuests: 156
   }
 
-  const labels = {
-    confirmed: '已确认',
-    pending: '待确认',
-    cancelled: '已取消',
-  }
+  const quickActions = [
+    { title: '员工管理', icon: '👥', action: () => router.push('/admin/staff'), color: 'bg-blue-500' },
+    { title: '系统设置', icon: '⚙️', action: () => router.push('/admin/settings'), color: 'bg-gray-500' },
+    { title: '财务报表', icon: '📊', action: () => router.push('/admin/reports'), color: 'bg-green-500' },
+    { title: '营地管理', icon: '🏕️', action: () => router.push('/admin/sites'), color: 'bg-purple-500' }
+  ]
 
   return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status]}`}
-    >
-      {labels[status]}
-    </span>
+    <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="px-4 py-6 sm:px-0">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            管理员控制台
+          </h2>
+          <p className="text-gray-600">系统总览和管理功能</p>
+        </div>
+
+        {/* 管理员统计卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">🏕️</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">营地总数</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.totalSites}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">💰</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">月收入</dt>
+                    <dd className="text-lg font-medium text-gray-900">¥{stats.monthlyRevenue.toLocaleString()}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">👥</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">员工总数</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.totalStaff}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">🎪</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">注册客户</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.totalGuests}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 管理员快速操作 */}
+        <div className="bg-white shadow rounded-lg p-6 mb-8">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">管理功能</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => (
+              <button
+                key={index}
+                onClick={action.action}
+                className={`${action.color} hover:opacity-90 text-white p-4 rounded-lg flex flex-col items-center justify-center transition-opacity`}
+              >
+                <span className="text-2xl mb-2">{action.icon}</span>
+                <span className="text-sm font-medium">{action.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </main>
   )
 }
 
-export default function DashboardPage() {
-  return (
-    <Layout title="仪表板" user={mockUser}>
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard key={index} stat={stat} />
-        ))}
-      </div>
+// 员工仪表盘
+function StaffDashboard({ user, currentTime }) {
+  const router = useRouter()
 
-      {/* 主要内容区域 */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* 最近预订 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">最近预订</h3>
-              <button className="text-sm text-green-600 hover:text-green-700 font-medium">
-                查看全部
-              </button>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {recentBookings.map(booking => (
-                <div
-                  key={booking.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-900">
-                        {booking.guestName}
-                      </h4>
-                      {getStatusBadge(booking.status)}
-                    </div>
-                    <p className="text-sm text-gray-600">{booking.package}</p>
-                    <p className="text-xs text-gray-500">
-                      {booking.checkIn} 至 {booking.checkOut}
-                    </p>
-                  </div>
-                  <div className="ml-4 text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      {booking.amount}
-                    </p>
-                    <p className="text-xs text-gray-500">#{booking.id}</p>
+  const stats = {
+    todayCheckins: 8,
+    todayCheckouts: 5,
+    availableSites: 13,
+    pendingBookings: 6
+  }
+
+  const quickActions = [
+    { title: '新增预订', icon: '📅', action: () => router.push('/bookings/new'), color: 'bg-blue-500' },
+    { title: '营地状态', icon: '🗺️', action: () => router.push('/sites'), color: 'bg-green-500' },
+    { title: '入住登记', icon: '✅', action: () => router.push('/checkin'), color: 'bg-purple-500' },
+    { title: '退房处理', icon: '📤', action: () => router.push('/checkout'), color: 'bg-orange-500' }
+  ]
+
+  return (
+    <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="px-4 py-6 sm:px-0">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            员工工作台
+          </h2>
+          <p className="text-gray-600">今日工作概览和快速操作</p>
+        </div>
+
+        {/* 员工统计卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">✅</span>
                   </div>
                 </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">今日入住</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.todayCheckins}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">📤</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">今日退房</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.todayCheckouts}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">🏕️</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">可用营地</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.availableSites}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                    <span className="text-white text-sm">⏳</span>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500">待处理</dt>
+                    <dd className="text-lg font-medium text-gray-900">{stats.pendingBookings}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 员工快速操作 */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">快速操作</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => (
+              <button
+                key={index}
+                onClick={action.action}
+                className={`${action.color} hover:opacity-90 text-white p-4 rounded-lg flex flex-col items-center justify-center transition-opacity`}
+              >
+                <span className="text-2xl mb-2">{action.icon}</span>
+                <span className="text-sm font-medium">{action.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+// 客户仪表盘
+function GuestDashboard({ user, currentTime }) {
+  const router = useRouter()
+
+  // 模拟客户的预订数据
+  const userBookings = [
+    { id: 1, siteNumber: 'A-12', checkIn: '2025-09-15', checkOut: '2025-09-17', status: '已确认' },
+    { id: 2, siteNumber: 'B-05', checkIn: '2025-10-02', checkOut: '2025-10-04', status: '待付款' }
+  ]
+
+  const quickActions = [
+    { title: '新预订', icon: '📅', action: () => router.push('/book'), color: 'bg-blue-500' },
+    { title: '我的预订', icon: '📋', action: () => router.push('/my-bookings'), color: 'bg-green-500' },
+    { title: '个人资料', icon: '👤', action: () => router.push('/profile'), color: 'bg-purple-500' },
+    { title: '营地介绍', icon: '🏕️', action: () => router.push('/sites/info'), color: 'bg-orange-500' }
+  ]
+
+  return (
+    <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="px-4 py-6 sm:px-0">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            欢迎回来，{user.firstName || user.username}！
+          </h2>
+          <p className="text-gray-600">管理您的营地预订和个人信息</p>
+        </div>
+
+        {/* 客户快速操作 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">快速操作</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {quickActions.map((action, index) => (
+                <button
+                  key={index}
+                  onClick={action.action}
+                  className={`${action.color} hover:opacity-90 text-white p-4 rounded-lg flex flex-col items-center justify-center transition-opacity`}
+                >
+                  <span className="text-2xl mb-2">{action.icon}</span>
+                  <span className="text-sm font-medium">{action.title}</span>
+                </button>
               ))}
             </div>
           </div>
+
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">账户信息</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">用户名</span>
+                <span className="text-sm font-medium">{user.username}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">邮箱</span>
+                <span className="text-sm font-medium">{user.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">注册时间</span>
+                <span className="text-sm font-medium">
+                  {new Date(user.createdAt).toLocaleDateString('zh-CN')}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">预订总数</span>
+                <span className="text-sm font-medium">{userBookings.length}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* 快速操作 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {/* 我的预订 */}
+        <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">快速操作</h3>
+            <h3 className="text-lg font-medium text-gray-900">我的预订</h3>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-4">
-              <button className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200">
-                <svg
-                  className="w-8 h-8 text-green-600 mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                <span className="text-sm font-medium text-gray-900">
-                  新建预订
-                </span>
-              </button>
-
-              <button className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200">
-                <svg
-                  className="w-8 h-8 text-blue-600 mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                  />
-                </svg>
-                <span className="text-sm font-medium text-gray-900">
-                  添加客户
-                </span>
-              </button>
-
-              <button className="flex flex-col items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200">
-                <svg
-                  className="w-8 h-8 text-purple-600 mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-                <span className="text-sm font-medium text-gray-900">
-                  管理套餐
-                </span>
-              </button>
-
-              <button className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200">
-                <svg
-                  className="w-8 h-8 text-orange-600 mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                <span className="text-sm font-medium text-gray-900">
-                  查看报表
-                </span>
+          {userBookings.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">营地编号</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">入住日期</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">退房日期</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {userBookings.map((booking) => (
+                    <tr key={booking.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {booking.siteNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {booking.checkIn}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {booking.checkOut}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          booking.status === '已确认' ? 'bg-green-100 text-green-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {booking.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button className="text-indigo-600 hover:text-indigo-900">查看详情</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="px-6 py-8 text-center">
+              <p className="text-gray-500">您还没有任何预订</p>
+              <button
+                onClick={() => router.push('/book')}
+                className="mt-4 text-indigo-600 hover:text-indigo-900 font-medium"
+              >
+                立即预订 →
               </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
-
-      {/* 营地状态概览 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">营地状态概览</h3>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">12</div>
-              <div className="text-sm text-gray-500">已入住</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">8</div>
-              <div className="text-sm text-gray-500">今日入住</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">5</div>
-              <div className="text-sm text-gray-500">今日退房</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Layout>
+    </main>
   )
 }
