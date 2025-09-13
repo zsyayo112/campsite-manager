@@ -1,14 +1,15 @@
 // contexts/AuthContext.js - 增强错误处理
 'use client'
 
-import { createContext, useCallback, useContext, useReducer } from 'react'
+import { createContext, useCallback, useContext, useReducer, useEffect } from 'react'
 
 // 认证状态的初始值
 const initialState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
-  error: null
+  error: null,
+  initialized: false
 }
 
 // 认证状态的Action类型
@@ -17,7 +18,8 @@ const AuthActionTypes = {
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGOUT: 'LOGOUT',
   SET_ERROR: 'SET_ERROR',
-  CLEAR_ERROR: 'CLEAR_ERROR'
+  CLEAR_ERROR: 'CLEAR_ERROR',
+  SET_INITIALIZED: 'SET_INITIALIZED'
 }
 
 // 认证状态的Reducer
@@ -49,6 +51,9 @@ function authReducer(state, action) {
 
     case AuthActionTypes.CLEAR_ERROR:
       return { ...state, error: null }
+
+    case AuthActionTypes.SET_INITIALIZED:
+      return { ...state, initialized: true, isLoading: false }
 
     default:
       return state
@@ -172,6 +177,10 @@ export function AuthProvider({ children }) {
 
   // 检查认证状态
   const checkAuth = useCallback(async () => {
+    if (state.initialized) {
+      return { success: state.isAuthenticated, user: state.user }
+    }
+
     try {
       dispatch({ type: AuthActionTypes.SET_LOADING, payload: true })
 
@@ -180,6 +189,11 @@ export function AuthProvider({ children }) {
         credentials: 'include'
       })
 
+      if (response.status === 401) {
+        dispatch({ type: AuthActionTypes.SET_INITIALIZED })
+        return { success: false }
+      }
+
       const data = await safeJsonParse(response)
 
       if (data.success && data.data.user) {
@@ -187,17 +201,25 @@ export function AuthProvider({ children }) {
           type: AuthActionTypes.LOGIN_SUCCESS,
           payload: { user: data.data.user }
         })
+        dispatch({ type: AuthActionTypes.SET_INITIALIZED })
         return { success: true, user: data.data.user }
       } else {
-        dispatch({ type: AuthActionTypes.LOGOUT })
+        dispatch({ type: AuthActionTypes.SET_INITIALIZED })
         return { success: false }
       }
     } catch (error) {
       console.error('检查认证状态失败:', error)
-      dispatch({ type: AuthActionTypes.LOGOUT })
+      dispatch({ type: AuthActionTypes.SET_INITIALIZED })
       return { success: false }
     }
-  }, [])
+  }, [state.initialized, state.isAuthenticated, state.user])
+
+  // 初始化时检查认证状态
+  useEffect(() => {
+    if (!state.initialized) {
+      checkAuth()
+    }
+  }, [checkAuth, state.initialized])
 
   // Context值
   const value = {
@@ -206,6 +228,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: state.isAuthenticated,
     isLoading: state.isLoading,
     error: state.error,
+    initialized: state.initialized,
 
     // 方法
     login,

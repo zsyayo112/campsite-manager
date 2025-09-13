@@ -518,11 +518,11 @@ export default function PackagesPage() {
 
       {/* 删除确认模态框 */}
       <DeletePackageModal
-        package={deleteModal.package}
+        packageData={deleteModal.package}
         isOpen={deleteModal.isOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        loading={deleteLoading}
+        hasBookings={deleteModal.package?.bookingCount > 0}
       />
     </div>
   )

@@ -1,6 +1,51 @@
 import { useState } from 'react'
 import { Button } from './FormComponents'
 
+// 删除套餐的自定义 Hook
+export function useDeletePackage() {
+  const [loading, setLoading] = useState(false)
+
+  const deletePackage = async (packageId) => {
+    try {
+      setLoading(true)
+
+      const response = await fetch(`/api/packages/${packageId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        return {
+          success: true,
+          message: data.message || '套餐删除成功'
+        }
+      } else {
+        return {
+          success: false,
+          message: data.message || '删除失败'
+        }
+      }
+    } catch (error) {
+      console.error('删除套餐时发生错误:', error)
+      return {
+        success: false,
+        message: '网络错误，请重试'
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    deletePackage,
+    loading
+  }
+}
+
 export default function DeletePackageModal({ 
   isOpen, 
   onClose, 
