@@ -8,12 +8,18 @@ export { default as Loading } from './Loading'
 export { default as Form } from '../form/Form'
 
 // 批量导出
+import Button from './Button'
+import Input from './Input'
+import Card from './Card'
+import Loading from './Loading'
+import Form from '../form/Form'
+
 export const UI = {
-  Button: require('./Button').default,
-  Input: require('./Input').default,
-  Card: require('./Card').default,
-  Loading: require('./Loading').default,
-  Form: require('../form/Form').default
+  Button,
+  Input,
+  Card,
+  Loading,
+  Form
 }
 
 // 类型定义（如果使用 TypeScript）

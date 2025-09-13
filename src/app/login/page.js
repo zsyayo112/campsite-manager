@@ -1,14 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { Button, ErrorMessage, Input } from '../../../components/ui/FormComponents'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login, isLoading, error, clearError } = useAuth()
+  
+  // 获取重定向URL
+  const redirect = searchParams.get('redirect') || '/dashboard'
 
   // 表单状态
   const [formData, setFormData] = useState({
@@ -36,7 +40,7 @@ export default function LoginPage() {
     const result = await login(formData.email, formData.password)
 
     if (result.success) {
-      router.push('/dashboard')
+      router.push(redirect)
     }
   }
 
@@ -45,7 +49,7 @@ export default function LoginPage() {
     const result = await login('admin@campsite.com', 'admin123')
 
     if (result.success) {
-      router.push('/dashboard')
+      router.push(redirect)
     }
   }
 

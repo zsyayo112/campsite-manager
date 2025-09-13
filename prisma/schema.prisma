@@ -1,4 +1,4 @@
-// prisma/schema.prisma
+// prisma/schema.prisma - 修正价格类型的数据模型
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 用户表（已存在，保持不变）
 model User {
   id         String   @id @default(cuid())
   username   String   @unique
@@ -22,6 +23,9 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
+  // 关联关系
+  bookings   Booking[]
+
   @@map("users")
 }
 
@@ -31,6 +35,7 @@ enum Role {
   guest
 }
 
+// 会话表（已存在，保持不变）
 model Session {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
@@ -39,4 +44,82 @@ model Session {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("sessions")
+}
+
+// 营地套餐表（新增）
+model Package {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  price       Int           // 价格以分为单位存储 (例如: 12000 = ¥120.00)
+  duration    Int           // 天数
+  capacity    Int           // 可容纳人数
+  amenities   String        // JSON字符串存储设施列表
+  images      String        // JSON字符串存储图片URLs
+  status      PackageStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // 关联关系
+  bookings    Booking[]
+
+  @@map("packages")
+}
+
+enum PackageStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+// 预订表（新增）
+model Booking {
+  id               String        @id @default(cuid())
+  userId           String        @map("user_id")
+  packageId        String        @map("package_id")
+  checkIn          DateTime      @map("check_in")
+  checkOut         DateTime      @map("check_out")
+  guestCount       Int           @map("guest_count")
+  totalPrice       Int           @map("total_price") // 价格以分为单位存储
+  status           BookingStatus @default(PENDING)
+  specialRequests  String?       @map("special_requests")
+  confirmationCode String?       @unique @map("confirmation_code")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  // 关联关系
+  user             User          @relation(fields: [userId], references: [id])
+  package          Package       @relation(fields: [packageId], references: [id])
+  guests           Guest[]
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  REFUNDED
+}
+
+// 客户信息表（新增）
+model Guest {
+  id                   String   @id @default(cuid())
+  bookingId            String   @map("booking_id")
+  name                 String
+  age                  Int?
+  phone                String?
+  emergencyContact     String?  @map("emergency_contact")
+  emergencyPhone       String?  @map("emergency_phone")
+  dietaryRequirements  String?  @map("dietary_requirements")
+  idNumber             String?  @map("id_number")      // 身份证号
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  booking              Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("guests")
 }
